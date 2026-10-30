@@ -1,0 +1,22 @@
+# Publish only what the site uses; everything else stays local.
+/*
+!/.gitignore
+!/index.html
+!/css/
+!/js/
+!/videos/
+!/images/
+
+/images/*
+!/images/books/
+!/images/illustrations/
+!/images/logo/
+!/images/photos/
+!/images/decorations/
+
+/images/books/book-ome-danpung.jpeg
+/images/illustrations/hero-reading-under-tree.png
+/images/logo/logo-tree-wordmark.png
+/images/photos/bookstore-interior.png
+/images/photos/sempe-exhibition-poster.png
+/images/decorations/Branch/
