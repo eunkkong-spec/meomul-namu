@@ -33,14 +33,15 @@
   </header>
 
   <!-- Hero -->
+  <div class="hero-track">
   <section class="hero">
     <video class="hero-media" autoplay muted loop playsinline preload="auto"
            poster="images/illustrations/hero-video-poster.jpg" aria-hidden="true">
-      <source src="videos/hero-meomul-1080-web.mp4" type="video/mp4">
+      <source src="videos/hero-meomul-1080-scrub.mp4" type="video/mp4">
     </video>
     <div class="hero-copy">
-      <p class="hero-tagline">쉼표가 필요 할 때, 머물고 싶은 곳</p>
-      <h1 class="hero-title">머물나무</h1>
+      <p class="hero-tagline" aria-live="polite"><span>사랑이 머무는 곳</span></p>
+      <h1 class="hero-title"><span>머물나무</span></h1>
       <p class="hero-sub">우리 동네 책방</p>
     </div>
     <div class="hero-actions">
@@ -52,6 +53,10 @@
       <span class="sound-info"><span>♪ The Scent of Old Books · @ourdays20c</span></span>
     </button>
     <audio class="hero-audio" src="videos/the-scent-of-old-books.mp3" loop preload="metadata"></audio>
+    <button type="button" class="scroll-btn" aria-label="다음 장면으로">
+      <span class="scroll-mouse" aria-hidden="true"><i></i></span>
+      <span class="scroll-text">SCROLL</span>
+    </button>
     <div class="video-bar">
       <button type="button" class="vb-play" aria-label="영상 일시정지" title="일시정지">
         <svg class="i-pause" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg>
@@ -59,15 +64,16 @@
       </button>
       <input type="range" class="vb-seek" min="0" max="1000" value="0" step="1" aria-label="영상 위치">
       <span class="vb-time">0:00 / 0:00</span>
-      <button type="button" class="vb-speed" aria-label="재생 속도 1배" title="재생 속도">1×</button>
+      <button type="button" class="vb-speed" aria-label="재생 속도 2배" title="재생 속도">2×</button>
     </div>
   </section>
+  </div>
 
   <!-- 01 This week -->
   <section id="this-week" class="section section-cream">
     <div class="container week-layout">
       <div class="week-left">
-        <span class="label">01 · 이주의 책 나누기</span>
+        <span class="label">이주의 책 나누기</span>
         <h2 class="section-title">이번 주, 함께 나누는 이야기</h2>
         <div class="shelf-book">
           <img src="images/books/book-eunsuki.png" alt="은숙이 표지">
@@ -94,7 +100,7 @@
   <section id="author" class="section section-sand">
     <div class="container author-layout">
       <div>
-        <span class="label">02 · 작가와의 만남</span>
+        <span class="label">작가와의 만남</span>
         <div class="card author-card">
           <img class="author-photo" src="images/illustrations/author-kim-eunjeong.png" alt="김은정 작가 일러스트">
           <div class="author-body">
@@ -110,7 +116,7 @@
       </div>
 
       <div>
-        <span class="label">03 · 다음 주 주제</span>
+        <span class="label">다음 주 주제</span>
         <div class="card next-card">
           <div class="next-top">
             <div class="shelf-book shelf-book-sm">
@@ -134,7 +140,7 @@
     <div class="container">
       <div class="section-head">
         <div>
-          <span class="label">04 · 이주의 신간</span>
+          <span class="label">이주의 신간</span>
           <h2 class="section-title">이번 주, 새로 들어온 책</h2>
         </div>
         <div class="book-tabs" role="tablist">
@@ -216,15 +222,35 @@
         <img src="images/photos/cafe-latte-art.png" alt="라떼 아트를 그리는 커피 한 잔">
       </div>
       <div class="cafe-body">
-        <span class="label">06 · 머물나무 카페</span>
+        <span class="label">머물나무 카페</span>
         <h2 class="cafe-title">책 읽으며 머무는 시간</h2>
         <p class="cafe-lead">커피 한 잔, 쿠키 하나와 함께 천천히 머무세요.</p>
-        <ul class="menu-list">
-          <li><span>토스트</span><span>[3000원]</span></li>
-          <li><span>쿠키</span><span>[1200원]</span></li>
-          <li><span>커피</span><span>[1500원]</span></li>
-          <li><span>레모네이드</span><span>[2000원]</span></li>
-        </ul>
+        <div class="menu">
+          <div class="menu-group">
+            <h3 class="menu-cat">커피</h3>
+            <ul class="menu-list">
+              <li><span>커피</span><span>1,500원</span></li>
+              <li><span>아이스커피</span><span>1,800원</span></li>
+              <li><span>카페라떼</span><span>2,500원</span></li>
+            </ul>
+          </div>
+          <div class="menu-group">
+            <h3 class="menu-cat">음료</h3>
+            <ul class="menu-list">
+              <li><span>레모네이드</span><span>2,000원</span></li>
+              <li><span>딸기 쉐이크</span><span>3,000원</span></li>
+              <li><span>어린이 음료</span><span>1,500원</span></li>
+            </ul>
+          </div>
+          <div class="menu-group">
+            <h3 class="menu-cat">디저트</h3>
+            <ul class="menu-list">
+              <li><span>쿠키</span><span>1,200원</span></li>
+              <li><span>토스트</span><span>3,000원</span></li>
+              <li><span>머랭쿠키</span><span>5,000원</span></li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -232,45 +258,49 @@
   <!-- 05 Under the tree -->
   <section id="under-tree" class="section section-sand under-tree">
     <div class="container">
-      <span class="label">05 · 머물나무에서의 시간</span>
-      <h2 class="section-title">머물 나무 아래.....</h2>
+      <span class="label">머물나무 아래</span>
+      <h2 class="section-title">이달의 머물나무 소식</h2>
 
       <div class="tile-grid">
-        <article class="tile">
+        <article class="tile tile-photo">
           <img src="images/tiles/tile-program-grandma-poem.jpg" alt="류옥순 할머니가 쓴 시 「감나무에 잎이 떨어지면」">
-          <span class="tag tag-lg">이달의 시인 류옥순 할머니</span>
+          <span class="tile-badge b-green">이달의 시</span>
+          <p class="tile-caption">이달의 시인 류옥순 할머니</p>
         </article>
-        <article class="tile">
+        <article class="tile tile-photo">
           <img src="images/tiles/tile-stay-window-reading.jpg" alt="창가에 앉아 책을 읽는 손님">
-          <p class="hand">창가의 오전</p>
+          <span class="tile-badge b-brown">머무는 시간</span>
         </article>
-        <article class="tile">
+        <article class="tile tile-photo">
           <img src="images/tiles/tile-kids-book-swap.jpg" alt="나란히 꽂힌 헌책들">
-          <span class="tag tag-lg">다 읽은 책은 바꿔 읽어요</span>
-          <p class="hand">[이름], 7살</p>
+          <span class="tile-badge b-red">나눔서가</span>
+          <p class="tile-caption">다 읽은 책은 바꿔 읽어요</p>
         </article>
         <article class="tile tile-poster t-dark">
-          <span class="tag tag-lg">공지</span>
+          <span class="tag">공지</span>
           <p class="tile-kicker">NOTICE</p>
           <h3>11월<br>휴무 안내</h3>
           <p class="tile-foot">11월 13일 (월) 휴무</p>
         </article>
 
-        <article class="tile">
+        <article class="tile tile-photo">
           <img src="images/tiles/tile-stay-seniors-writing-class.jpg" alt="책방에서 글쓰기 수업을 하는 어르신들">
-          <span class="tag tag-lg">매주 화 11시 : 어르신들의 글쓰기 수업</span>
+          <span class="tile-badge b-green">프로그램</span>
+          <p class="tile-caption">매주 화 오전 11시<br>어르신 글쓰기 수업</p>
         </article>
-        <article class="tile tile-contest">
+        <article class="tile tile-photo tile-contest">
           <img src="images/tiles/tile-program-fairytale-contest.jpg" alt="2026 머물나무 동화쓰기 대회 포스터">
-          <span class="tag tag-lg">11월 행사 일정</span>
+          <span class="tile-badge b-red">행사</span>
+          <p class="tile-caption">11월 행사 일정</p>
         </article>
-        <article class="tile">
+        <article class="tile tile-photo">
           <img src="images/tiles/tile-kids-rabbit-drawing.jpg" alt="아이가 그린 「달나라로 간 내 친구 네네」 토끼 그림">
-          <span class="tag">아이들 작품</span>
+          <span class="tile-badge b-orange">아이들 작품</span>
         </article>
-        <article class="tile">
+        <article class="tile tile-photo">
           <img src="images/tiles/tile-stay-kids-reading-loft.jpg" alt="책방 다락에서 책을 읽는 아이들">
-          <span class="tag tag-lg">머물나무의 아이들</span>
+          <span class="tile-badge b-brown">머무는 시간</span>
+          <p class="tile-caption">머물나무의 아이들</p>
         </article>
 
         <article class="tile tile-poster t-orange">
@@ -280,17 +310,20 @@
           <p class="tile-note">이달의 작가 ㅣ 김은정 님과<br>북토크를 기대해보세요</p>
           <p class="tile-foot">11월 14일 (토) 오후 2시</p>
         </article>
-        <article class="tile">
+        <article class="tile tile-photo">
           <img src="images/tiles/tile-kids-cat-meomuri.jpg" alt="책방 고양이 머물이">
-          <span class="tag">머물나무 지킴이 머물이</span>
+          <span class="tile-badge b-brown">머무는 시간</span>
+          <p class="tile-caption">머물나무 지킴이, 머물이</p>
         </article>
-        <article class="tile">
+        <article class="tile tile-photo">
           <img src="images/tiles/tile-program-kids-drawing-class.jpg" alt="그림 수업 중인 아이들">
-          <span class="tag tag-lg">매주(수) 3시 : 어린이 그림수업</span>
+          <span class="tile-badge b-green">프로그램</span>
+          <p class="tile-caption">매주 수 오후 3시<br>어린이 그림 수업</p>
         </article>
-        <article class="tile">
+        <article class="tile tile-photo">
           <img src="images/tiles/tile-stay-cafe-french-toast.jpg" alt="블루베리와 바나나를 올린 프렌치토스트">
-          <span class="tag tag-lg">머물카페 신메뉴~ 드시러 오세요.</span>
+          <span class="tile-badge b-orange">카페</span>
+          <p class="tile-caption">머물카페 신메뉴, 드시러 오세요</p>
         </article>
       </div>
     </div>
