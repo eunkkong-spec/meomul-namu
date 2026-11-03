@@ -4,8 +4,8 @@
 !/index.html
 !/css/
 !/js/
-!/videos/
 !/images/
+!/videos/
 
 /images/*
 !/images/books/
@@ -13,10 +13,14 @@
 !/images/logo/
 !/images/photos/
 !/images/decorations/
+!/images/tiles/
 
 /images/books/book-ome-danpung.jpeg
-/images/illustrations/hero-reading-under-tree.png
+/images/illustrations/*
+!/images/illustrations/hero-video-poster.jpg
+!/images/illustrations/author-kim-eunjeong.png
 /images/logo/logo-tree-wordmark.png
 /images/photos/bookstore-interior.png
 /images/photos/sempe-exhibition-poster.png
-/images/decorations/Branch/
+/images/decorations/
+/images/tiles/*.png

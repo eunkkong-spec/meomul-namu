@@ -1,12 +1,33 @@
-// Hero video sound toggle
-const video = document.querySelector('.hero-story');
-const soundBtn = document.querySelector('.sound-toggle');
+// Hero sound: background music up front, the video's own sound effects mixed in quietly.
+// Browsers only allow sound after a click, so the page starts muted.
+const MUSIC_VOLUME = 0.8;
+const SFX_VOLUME = 0.2;
 
-soundBtn.addEventListener('click', () => {
-  video.muted = !video.muted;
-  if (!video.muted) video.play();
-  soundBtn.setAttribute('aria-pressed', String(!video.muted));
-  soundBtn.textContent = video.muted ? '소리 켜기' : '소리 끄기';
+const soundBar = document.querySelector('.sound-bar');
+const music = document.querySelector('.hero-audio');
+const heroVideo = document.querySelector('.hero-media');
+
+function setSound(on) {
+  const label = on ? '소리 끄기' : '소리 켜기';
+  soundBar.setAttribute('aria-pressed', String(on));
+  soundBar.setAttribute('aria-label', label);
+  soundBar.title = label;
+}
+
+soundBar.addEventListener('click', () => {
+  if (music.paused) {
+    music.volume = MUSIC_VOLUME;
+    heroVideo.volume = SFX_VOLUME;
+    heroVideo.muted = false;
+    music.play().then(() => setSound(true)).catch(() => {
+      heroVideo.muted = true;
+      setSound(false);
+    });
+  } else {
+    music.pause();
+    heroVideo.muted = true;
+    setSound(false);
+  }
 });
 
 // 04 New books: category tabs
@@ -33,18 +54,4 @@ bookTabs.forEach((tab) => {
 document.querySelector('.shelf-next').addEventListener('click', () => {
   const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
   track.scrollBy({ left: atEnd ? -track.scrollWidth : track.clientWidth / 2 });
-});
-
-// 05 Under the tree: tile filters
-const filters = document.querySelectorAll('.filter');
-const tiles = document.querySelectorAll('.tile');
-
-filters.forEach((btn) => {
-  btn.addEventListener('click', () => {
-    filters.forEach((f) => f.classList.toggle('is-active', f === btn));
-    const type = btn.dataset.filter;
-    tiles.forEach((tile) => {
-      tile.hidden = type !== 'all' && tile.dataset.type !== type;
-    });
-  });
 });
