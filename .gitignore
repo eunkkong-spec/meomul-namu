@@ -1,4 +1,4 @@
-# Publish only what the site uses; everything else stays local.
+# Publish only the site itself; everything else stays local.
 /*
 !/.gitignore
 !/index.html
@@ -7,38 +7,7 @@
 !/css/
 !/js/
 !/images/
-!/videos/
+!/media/
 
-/images/*
-!/images/books/
-!/images/illustrations/
-!/images/logo/
-!/images/photos/
-!/images/decorations/
-!/images/tiles/
-!/images/program/
-!/images/sharing/
-
-/images/illustrations/*
-!/images/illustrations/hero-video-poster.jpg
-!/images/illustrations/author-kim-eunjeong.png
-/images/logo/logo-tree-wordmark.png
-/images/photos/bookstore-interior.png
-/images/photos/sempe-exhibition-poster.png
-/images/decorations/*
-!/images/decorations/shelf-board.png
-/images/tiles/*.png
-/videos/hero-meomul-1080-web.mp4
-
-# books: only covers the pages use
-/images/books/*
-!/images/books/book-boys-into-literature.png
-!/images/books/book-petit-nicolas.png
-!/images/books/book-uk-travel_새로고-trim.png
-!/images/books/고독-trim.png
-!/images/books/고독의힘_새로고-trim.png
-!/images/books/라임오렌지나무-trim.png
-!/images/books/빨강의자서전_책_각도-trim.png
-!/images/books/오돌뼈씨의하루_새로고-trim.png
-!/images/books/은숙이_새로고-trim.png
-# end books
+# etc/ (unused files, originals, old versions, mockups), node_modules,
+# and the React/Vite tooling are kept on this computer only.
