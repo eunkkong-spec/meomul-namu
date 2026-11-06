@@ -44,6 +44,11 @@ authModal.innerHTML = `
   </div>
 
   <form class="donate-form auth-form" data-form="login" novalidate>
+    <div class="social-login">
+      <button type="button" class="btn-social btn-google" data-social="google"><span class="social-logo" aria-hidden="true">G</span>Google로 계속하기</button>
+      <button type="button" class="btn-social btn-kakao" data-social="kakao"><span class="social-logo" aria-hidden="true">💬</span>카카오로 계속하기</button>
+      <p class="social-or"><span>또는 이메일로</span></p>
+    </div>
     <label><span class="lbl">이메일</span><input type="email" name="email" required autocomplete="email"></label>
     <label><span class="lbl">비밀번호</span><input type="password" name="password" required autocomplete="current-password"></label>
     <p class="form-error" role="alert" hidden></p>
@@ -52,6 +57,11 @@ authModal.innerHTML = `
   </form>
 
   <form class="donate-form auth-form" data-form="signup" novalidate hidden>
+    <div class="social-login">
+      <button type="button" class="btn-social btn-google" data-social="google"><span class="social-logo" aria-hidden="true">G</span>Google로 계속하기</button>
+      <button type="button" class="btn-social btn-kakao" data-social="kakao"><span class="social-logo" aria-hidden="true">💬</span>카카오로 계속하기</button>
+      <p class="social-or"><span>또는 이메일로</span></p>
+    </div>
     <div class="field-row">
       <label><span class="lbl">이름 <span class="req">*</span></span><input type="text" name="name" required autocomplete="name"></label>
       <label><span class="lbl">연락처</span><input type="tel" name="phone" placeholder="010-0000-0000" autocomplete="tel"></label>
@@ -161,6 +171,123 @@ forms.login.addEventListener('submit', async (e) => {
   finish(`<h3>${user.name} 님, 다시 오셨네요</h3><p>나눔 포인트 <b>${(user.points || 0).toLocaleString('ko-KR')}P</b></p>`);
 });
 
+// ----- 소셜 로그인 (Google · 카카오) -----
+const keys = window.MEOMUL_AUTH || {};
+
+// one member record per email; social sign-ins don't need a password
+function socialSignIn(provider, { name, email }) {
+  if (!email) {
+    alert('이메일 제공에 동의해야 가입할 수 있어요.');
+    return;
+  }
+  email = email.toLowerCase();
+  const users = store.users();
+  const isNew = !users[email];
+  users[email] = {
+    points: 0,
+    joined: new Date().toISOString().slice(0, 10),
+    phone: '',
+    ...users[email],
+    name: users[email]?.name || name || email.split('@')[0],
+    email,
+    provider,
+  };
+  store.saveUsers(users);
+  store.setSession(email);
+  if (!authModal.open) authModal.showModal();
+  const via = provider === 'google' ? 'Google' : '카카오';
+  finish(isNew
+    ? `<h3>환영해요, ${users[email].name} 님!</h3><p>${via} 계정으로 머물나무 회원이 되셨어요.</p>`
+    : `<h3>${users[email].name} 님, 다시 오셨네요</h3><p>${via} 계정으로 로그인했어요.</p>`);
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) return resolve();
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(src));
+    document.head.appendChild(s);
+  });
+}
+
+function notReady(form, who) {
+  fail(form, `${who} 로그인은 준비 중이에요. 이메일로 가입해 주세요.`);
+}
+
+// Google: popup → access token → profile
+async function googleLogin(form) {
+  if (!keys.googleClientId) return notReady(form, 'Google');
+  try {
+    await loadScript('https://accounts.google.com/gsi/client');
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: keys.googleClientId,
+      scope: 'openid email profile',
+      callback: async (res) => {
+        if (res.error) return fail(form, 'Google 로그인이 취소되었어요.');
+        const me = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${res.access_token}` },
+        }).then((r) => r.json());
+        socialSignIn('google', { name: me.name, email: me.email });
+      },
+    });
+    client.requestAccessToken();
+  } catch {
+    fail(form, 'Google 로그인을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+  }
+}
+
+// Kakao: redirect to Kakao → back here with ?code=… → token → profile
+const KAKAO_SDK = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
+const redirectUri = location.origin + location.pathname;
+
+async function kakaoReady() {
+  await loadScript(KAKAO_SDK);
+  if (!Kakao.isInitialized()) Kakao.init(keys.kakaoJsKey);
+}
+
+async function kakaoLogin(form) {
+  if (!keys.kakaoJsKey || !keys.kakaoRestKey) return notReady(form, '카카오');
+  try {
+    await kakaoReady();
+    Kakao.Auth.authorize({ redirectUri, state: 'kakao', scope: 'profile_nickname,account_email' });
+  } catch {
+    fail(form, '카카오 로그인을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+  }
+}
+
+async function finishKakaoRedirect() {
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code');
+  if (!code || params.get('state') !== 'kakao' || !keys.kakaoRestKey) return;
+  history.replaceState(null, '', redirectUri + location.hash); // tidy the address bar
+  try {
+    const token = await fetch('https://kauth.kakao.com/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
+      body: new URLSearchParams({ grant_type: 'authorization_code', client_id: keys.kakaoRestKey, redirect_uri: redirectUri, code }),
+    }).then((r) => r.json());
+    if (!token.access_token) throw new Error('no token');
+    await kakaoReady();
+    Kakao.Auth.setAccessToken(token.access_token);
+    const me = await Kakao.API.request({ url: '/v2/user/me' });
+    const account = me.kakao_account || {};
+    socialSignIn('kakao', { name: account.profile?.nickname, email: account.email });
+  } catch {
+    openAuth('login');
+    fail(forms.login, '카카오 로그인에 실패했어요. 다시 시도해 주세요.');
+  }
+}
+
+authModal.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-social]');
+  if (!btn) return;
+  const form = btn.closest('form');
+  if (btn.dataset.social === 'google') googleLogin(form);
+  else kakaoLogin(form);
+});
+
 // ----- header: 로그인/회원가입 ↔ 이름/로그아웃 -----
 const actions = document.querySelector('.header-actions');
 const guestHTML = actions.innerHTML;
@@ -180,6 +307,7 @@ function renderHeader() {
     <button type="button" class="link-login logout">로그아웃</button>`;
   actions.querySelector('.logout').addEventListener('click', () => {
     store.setSession(null);
+    if (window.Kakao?.Auth?.getAccessToken()) Kakao.Auth.logout().catch(() => {});
     renderHeader();
   });
 }
@@ -203,3 +331,4 @@ document.addEventListener('click', () => setTimeout(fillForms), true); // forms 
 
 renderHeader();
 fillForms();
+finishKakaoRedirect();
