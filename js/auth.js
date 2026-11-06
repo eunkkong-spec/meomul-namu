@@ -212,8 +212,47 @@ function loadScript(src) {
   });
 }
 
+// 시연 모드: with no keys set, the social buttons show a sample sign-in step inside the modal
+const DEMO_ACCOUNTS = {
+  google: [
+    { name: '홍길동', email: 'hong.gildong@gmail.com' },
+    { name: '김머물', email: 'meomul.kim@gmail.com' },
+  ],
+  kakao: [{ name: '진주', email: 'jinju@kakao.com' }],
+};
+
 function notReady(form, who) {
-  fail(form, `${who} 로그인은 준비 중이에요. 이메일로 가입해 주세요.`);
+  const provider = who === 'Google' ? 'google' : 'kakao';
+  forms.login.hidden = true;
+  forms.signup.hidden = true;
+  doneBox.hidden = false;
+  const accounts = DEMO_ACCOUNTS[provider];
+  doneBox.innerHTML = provider === 'google'
+    ? `<div class="demo-sso demo-google">
+        <p class="demo-tag">시연용 화면</p>
+        <h3><span class="social-logo" aria-hidden="true">G</span> 계정 선택</h3>
+        <p class="demo-sub">머물나무(으)로 이동할 계정을 선택하세요</p>
+        <ul class="demo-accounts">
+          ${accounts.map((a, i) => `<li><button type="button" data-demo="${i}">
+            <span class="demo-avatar">${a.name.slice(0, 1)}</span>
+            <span><b>${a.name}</b><small>${a.email}</small></span></button></li>`).join('')}
+        </ul>
+        <button type="button" class="demo-back" data-tab="login">취소</button>
+      </div>`
+    : `<div class="demo-sso demo-kakao">
+        <p class="demo-tag">시연용 화면</p>
+        <h3><span class="social-logo" aria-hidden="true">💬</span> 카카오 로그인</h3>
+        <p class="demo-sub"><b>머물나무</b>에서 다음 정보를 받으려고 해요</p>
+        <ul class="demo-consent">
+          <li>✓ 닉네임 · ${accounts[0].name}</li>
+          <li>✓ 카카오계정(이메일) · ${accounts[0].email}</li>
+        </ul>
+        <button type="button" class="btn-social btn-kakao" data-demo="0">동의하고 계속하기</button>
+        <button type="button" class="demo-back" data-tab="login">취소</button>
+      </div>`;
+  doneBox.querySelectorAll('[data-demo]').forEach((btn) => {
+    btn.addEventListener('click', () => socialSignIn(provider, accounts[Number(btn.dataset.demo)]));
+  });
 }
 
 // Google: popup → access token → profile
@@ -309,6 +348,7 @@ function renderHeader() {
     store.setSession(null);
     if (window.Kakao?.Auth?.getAccessToken()) Kakao.Auth.logout().catch(() => {});
     renderHeader();
+    fillForms(); // clears what we had filled in for this member
   });
 }
 
@@ -318,13 +358,21 @@ document.querySelectorAll('[data-auth]').forEach((link) => {
 });
 
 // logged-in members don't retype their name and phone in the booking forms
+// a field we filled (and the visitor hasn't changed since) follows whoever is logged in;
+// anything the visitor typed themselves is left alone
 function fillForms() {
   const user = currentUser();
-  if (!user) return;
+  const values = { name: user?.name || '', phone: user?.phone || '', email: user?.email || '' };
   document.querySelectorAll('form:not(.auth-form)').forEach((form) => {
-    if (form.name instanceof HTMLInputElement && !form.name.value) form.name.value = user.name;
-    if (form.phone instanceof HTMLInputElement && !form.phone.value) form.phone.value = user.phone || '';
-    if (form.email instanceof HTMLInputElement && !form.email.value) form.email.value = user.email;
+    Object.entries(values).forEach(([key, value]) => {
+      const input = form.elements[key];
+      if (!(input instanceof HTMLInputElement)) return;
+      const ours = input.dataset.autofill !== undefined && input.value === input.dataset.autofill;
+      if (input.value && !ours) return;
+      input.value = value;
+      if (value) input.dataset.autofill = value;
+      else delete input.dataset.autofill;
+    });
   });
 }
 document.addEventListener('click', () => setTimeout(fillForms), true); // forms are rebuilt when modals open
