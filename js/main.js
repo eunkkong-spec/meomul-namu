@@ -71,21 +71,15 @@ function updateScene() {
 heroVideo.addEventListener('timeupdate', updateScene);
 heroVideo.addEventListener('seeked', updateScene);
 
-// Scroll scrubbing: the video always plays on its own. Scrolling down through the pinned hero
-// fast-forwards it by the amount scrolled (it really plays, up to 8×), scrolling up rewinds it;
-// when scrolling stops it carries on playing from there.
+// Scroll-locked story: while the hero is at the top of the page and the video hasn't reached
+// its end, scrolling doesn't move the page — it fast-forwards (or rewinds) the video instead.
+// Once the video is at its end, the next scroll moves on down to the page.
 let baseRate = 2;        // default speed; the speed button changes it
 heroVideo.defaultPlaybackRate = baseRate;
 heroVideo.playbackRate = baseRate;
 let userPaused = false;  // set by the play/pause button
 let scrubTarget = null;
-let lastProgress = 0;
-
-function scrollProgress() {
-  const r = heroTrack.getBoundingClientRect();
-  const span = r.height - window.innerHeight;
-  return span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
-}
+const SECONDS_PER_PX = 0.03; // one mouse-wheel notch (~100px) ≈ 3 seconds of story
 
 function resumeNormal() {
   scrubTarget = null;
@@ -111,15 +105,38 @@ setInterval(() => {
   }
 }, 100);
 
-window.addEventListener('scroll', () => {
-  const p = scrollProgress();
-  const d = heroVideo.duration || 0;
-  const delta = (p - lastProgress) * d; // the whole hero track = the whole video
-  lastProgress = p;
-  if (!d || Math.abs(delta) < 0.01) return;
-  const from = scrubTarget ?? heroVideo.currentTime;
-  scrubTarget = Math.min(d - 0.1, Math.max(0, from + delta));
-}, { passive: true });
+const atTop = () => window.scrollY < 4;
+const storyEnd = () => (heroVideo.duration || 0) - 0.8;
+
+// true when this scroll gesture should drive the video instead of the page
+function captureScroll(delta) {
+  const d = heroVideo.duration;
+  if (!d || !atTop()) return false;
+  const now = scrubTarget ?? heroVideo.currentTime;
+  if (delta > 0 && now >= storyEnd()) return false; // story finished → let the page scroll
+  if (delta < 0 && now <= 0.1) return false;
+  scrubTarget = Math.min(d - 0.1, Math.max(0, now + delta * SECONDS_PER_PX));
+  return true;
+}
+
+window.addEventListener('wheel', (e) => {
+  if (captureScroll(e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY)) e.preventDefault();
+}, { passive: false });
+
+let touchY = null;
+window.addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; }, { passive: true });
+window.addEventListener('touchmove', (e) => {
+  if (touchY === null) return;
+  const y = e.touches[0].clientY;
+  if (captureScroll((touchY - y) * 2)) e.preventDefault();
+  touchY = y;
+}, { passive: false });
+
+window.addEventListener('keydown', (e) => {
+  const keys = { ArrowDown: 100, PageDown: 400, ' ': 400, ArrowUp: -100, PageUp: -400 };
+  if (!(e.key in keys) || e.target.closest('input, textarea, button, a')) return;
+  if (captureScroll(keys[e.key])) e.preventDefault();
+});
 
 // Scroll button: each click jumps to the next scene; after the last one it scrolls down to the page
 const scrollBtn = document.querySelector('.scroll-btn');
@@ -170,6 +187,7 @@ heroVideo.addEventListener('loadedmetadata', syncTime);
 
 vbSeek.addEventListener('input', () => {
   seeking = true;
+  scrubTarget = null; // a manual jump overrides any scroll-driven target
   heroVideo.currentTime = (vbSeek.value / 1000) * (heroVideo.duration || 0);
   syncTime();
 });
@@ -210,4 +228,106 @@ bookTabs.forEach((tab) => {
 document.querySelector('.shelf-next').addEventListener('click', () => {
   const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
   track.scrollBy({ left: atEnd ? -track.scrollWidth : track.clientWidth / 2 });
+});
+
+// 05 Photo tiles: click to open the photo where it sits and grow it to fill the screen
+const EASE = 'cubic-bezier(.2, .8, .2, 1)';
+
+function openPhoto(tile) {
+  const thumb = tile.querySelector('img');
+  const start = thumb.getBoundingClientRect();
+  const caption = tile.querySelector('.tile-caption')?.innerHTML || tile.querySelector('.tile-badge')?.textContent || '';
+
+  const box = document.createElement('div');
+  box.className = 'lightbox';
+  box.innerHTML = `<img src="${thumb.currentSrc || thumb.src}" alt="${thumb.alt}"><p class="lightbox-caption">${caption}</p>
+    <button type="button" class="lightbox-close" aria-label="닫기">×</button>`;
+  document.body.appendChild(box);
+  const img = box.querySelector('img');
+
+  // fit the full photo into the screen, keeping its shape
+  const ratio = thumb.naturalWidth / thumb.naturalHeight || 1;
+  let w = Math.min(window.innerWidth * 0.9, 1100);
+  let h = w / ratio;
+  const maxH = window.innerHeight * 0.78;
+  if (h > maxH) { h = maxH; w = h * ratio; }
+  const end = { left: (window.innerWidth - w) / 2, top: (window.innerHeight - h) / 2 - 20, width: w, height: h };
+  const from = { left: start.left, top: start.top, width: start.width, height: start.height };
+  const px = (r) => ({ left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+
+  Object.assign(img.style, px(end));
+  img.animate([px(from), px(end)], { duration: 450, easing: EASE });
+  box.animate([{ backgroundColor: 'rgba(30, 20, 14, 0)' }, { backgroundColor: 'rgba(30, 20, 14, .82)' }], { duration: 450, fill: 'forwards' });
+  thumb.style.visibility = 'hidden';
+
+  function close() {
+    document.removeEventListener('keydown', onKey);
+    const now = thumb.getBoundingClientRect();
+    const back = { left: now.left, top: now.top, width: now.width, height: now.height };
+    box.classList.add('is-closing');
+    box.animate([{ backgroundColor: 'rgba(30, 20, 14, .82)' }, { backgroundColor: 'rgba(30, 20, 14, 0)' }], { duration: 350, fill: 'forwards' });
+    img.animate([px(end), px(back)], { duration: 350, easing: EASE, fill: 'forwards' }).onfinish = () => {
+      thumb.style.visibility = '';
+      box.remove();
+      tile.focus();
+    };
+  }
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  box.addEventListener('click', close);
+  document.addEventListener('keydown', onKey);
+  box.querySelector('.lightbox-close').focus();
+}
+
+document.querySelectorAll('.tile-photo').forEach((tile) => {
+  tile.tabIndex = 0;
+  tile.setAttribute('role', 'button');
+  tile.setAttribute('aria-label', `${tile.querySelector('img').alt} 크게 보기`);
+  tile.addEventListener('click', () => openPhoto(tile));
+  tile.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPhoto(tile); }
+  });
+});
+
+// 04 New books: 예약대기 opens a reservation form in a modal
+const reserveModal = document.querySelector('#reserve');
+const reserveForm = reserveModal.querySelector('.reserve-form');
+const reserveFormHTML = reserveForm.innerHTML;
+
+function openReserve(book) {
+  reserveForm.innerHTML = reserveFormHTML; // fresh form each time
+  reserveForm.querySelector('.reserve-book').textContent = book;
+  reserveForm.dataset.book = book;
+  reserveModal.showModal();
+}
+document.querySelectorAll('[data-book]').forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    openReserve(btn.dataset.book);
+  });
+});
+reserveModal.querySelector('.modal-close').addEventListener('click', () => reserveModal.close());
+reserveModal.addEventListener('click', (e) => { if (e.target === reserveModal) reserveModal.close(); });
+
+reserveForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const f = reserveForm;
+  const problems = [];
+  if (!(Number(f.count.value) >= 1)) problems.push('권수');
+  if (!f.name.value.trim()) problems.push('이름');
+  if (!/^[0-9-]{9,13}$/.test(f.phone.value.trim())) problems.push('연락처');
+  if (!f.agree.checked) problems.push('개인정보 수집 동의');
+  const err = f.querySelector('.form-error');
+  if (problems.length) {
+    err.textContent = `다음 항목을 확인해 주세요: ${problems.join(', ')}`;
+    err.hidden = false;
+    return;
+  }
+  // no server yet — show the confirmation in place of the form
+  f.innerHTML = `
+    <div class="donate-done">
+      <h3>예약대기가 접수되었어요</h3>
+      <p><b>${f.dataset.book}</b> · ${f.count.value}권<br>
+        책이 들어오면 <b>${f.phone.value.trim()}</b>로 바로 알려 드릴게요.</p>
+      <button type="button" class="btn btn-green" onclick="this.closest('dialog').close()">닫기</button>
+    </div>`;
 });
