@@ -363,49 +363,6 @@ ul, ol { padding: 0; list-style: none; }
 .sound-bar[aria-pressed="true"] .sound-icon i:nth-child(3) { height: 10px; animation-delay: -.6s; }
 .sound-bar[aria-pressed="true"] .sound-info { color: #fff; }
 .sound-bar[aria-pressed="true"] .sound-info span { animation: marquee 12s linear infinite; }
-/* Scroll button: mouse icon with a moving wheel, sits above the video bar */
-.scroll-btn {
-  position: absolute;
-  left: 50%;
-  bottom: 104px;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border: 0;
-  background: none;
-  color: #fff;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, .35);
-  transform: translateX(-50%);
-  animation: scroll-bob 2s ease-in-out infinite;
-}
-.scroll-mouse {
-  position: relative;
-  width: 26px;
-  height: 40px;
-  border: 2px solid #fff;
-  border-radius: 14px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, .25);
-}
-.scroll-mouse i {
-  position: absolute;
-  left: 50%;
-  top: 7px;
-  width: 4px;
-  height: 8px;
-  margin-left: -2px;
-  border-radius: 2px;
-  background: #fff;
-  animation: scroll-wheel 1.6s ease-in-out infinite;
-}
-.scroll-text { font-size: 12px; letter-spacing: .2em; }
-.scroll-btn:hover .scroll-mouse { background: rgba(255, 255, 255, .18); }
-@keyframes scroll-wheel { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(12px); } }
-@keyframes scroll-bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 6px); } }
-@media (prefers-reduced-motion: reduce) { .scroll-btn, .scroll-mouse i { animation: none; } }
-
 /* Hero video controls (bottom centre) */
 .video-bar {
   position: absolute;
@@ -1255,8 +1212,6 @@ ul, ol { padding: 0; list-style: none; }
   .btn-sm { padding: 5px 16px; }
   .sound-bar { left: 16px; right: auto; bottom: 24px; }
   .video-bar { bottom: 140px; }
-  .scroll-btn { bottom: 204px; }
-  .scroll-text { display: none; }
   .vb-time { display: none; }
   .sound-info { width: 180px; }
   .author-card { flex-direction: column; align-items: flex-start; padding: 24px 20px; }
@@ -1276,4 +1231,35 @@ ul, ol { padding: 0; list-style: none; }
   .hand { font-size: 16px; }
   .footer-inner { grid-template-columns: minmax(0, 1fr); gap: 36px; }
   .footer-bottom { flex-direction: column; }
+}
+
+/* Tall / portrait screens: don't stretch the video to the screen height (that crops the
+   sides and hides scenes like the couple on the left). Lay it across the bottom at near
+   full width and let the sky colour carry on above it. */
+@media (max-aspect-ratio: 3/2) {
+  .hero { background: linear-gradient(#52ace0, #8ccbea 55%, #b6dfed); }
+  .hero-media {
+    top: auto;
+    bottom: 0;
+    left: -15%;
+    width: 130%; /* trims 11.5% off each side at most */
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    object-position: 50% 50%;
+    -webkit-mask-image: linear-gradient(transparent, #000 24%);
+    mask-image: linear-gradient(transparent, #000 24%);
+  }
+}
+
+/* tablet & small laptop: the centred video bar would sit on the hero buttons — lift it */
+@media (max-width: 1024px) {
+  .video-bar { bottom: 96px; }
+}
+/* phones in portrait: the video is a strip along the bottom (73vw tall),
+   so stack the controls in the sky just above it instead of over the picture */
+@media (max-width: 640px) and (max-aspect-ratio: 3/2) {
+  .sound-bar { bottom: calc(73vw + 14px); }
+  .video-bar { bottom: calc(73vw + 74px); }
+  .hero-actions { bottom: calc(73vw + 132px); }
 }

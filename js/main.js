@@ -138,19 +138,6 @@ window.addEventListener('keydown', (e) => {
   if (captureScroll(keys[e.key])) e.preventDefault();
 });
 
-// Scroll button: each click jumps to the next scene; after the last one it scrolls down to the page
-const scrollBtn = document.querySelector('.scroll-btn');
-scrollBtn.addEventListener('click', () => {
-  const next = SCENES.find((s) => s.from > heroVideo.currentTime + 0.5);
-  if (next) {
-    scrubTarget = null;
-    heroVideo.currentTime = next.from + 0.5;
-    resumeNormal();
-  } else {
-    const r = heroTrack.getBoundingClientRect();
-    window.scrollTo({ top: window.scrollY + r.bottom - header.offsetHeight, behavior: 'smooth' });
-  }
-});
 
 // Hero video controls: play/pause, scrub, speed
 const vbPlay = document.querySelector('.vb-play');
