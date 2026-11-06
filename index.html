@@ -132,7 +132,7 @@
               <p class="author-name">김은정 지음</p>
             </div>
           </div>
-          <a href="#" class="btn btn-red">미리 읽고 참여하기</a>
+          <a href="#join" class="btn btn-red">미리 읽고 참여하기</a>
         </div>
       </div>
     </div>
@@ -331,6 +331,43 @@
       </div>
     </div>
   </section>
+
+  <!-- Next week's book club sign-up (modal) -->
+  <dialog class="booking-modal" id="join" aria-labelledby="join-title">
+    <button type="button" class="modal-close" aria-label="닫기">×</button>
+    <h2 class="booking-title" id="join-title">다음 주 독서토론 참여 신청</h2>
+    <p class="booking-lead">신청하시면 책을 미리 읽을 수 있도록 책방에서 따로 챙겨 두거나 대여해 드려요.</p>
+    <form class="donate-form join-form" method="dialog" novalidate>
+      <fieldset>
+        <legend>참여할 모임</legend>
+        <p class="reserve-book">사춘기 아들과 우당탕탕 영국여행기 · 김은정</p>
+        <p class="join-when">독서토론 · 11월 6일 금요일 오후 7시 · 머물나무 책방</p>
+        <div class="field-row">
+          <label><span class="lbl">인원 <span class="req">*</span></span><input type="number" name="people" min="1" max="5" value="1" required></label>
+          <label>책 준비
+            <select name="book">
+              <option>책을 미리 구매할게요</option>
+              <option>나눔서가에서 빌려 읽을게요</option>
+              <option>이미 가지고 있어요</option>
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>신청인 정보</legend>
+        <div class="field-row">
+          <label><span class="lbl">이름 <span class="req">*</span></span><input type="text" name="name" required autocomplete="name"></label>
+          <label><span class="lbl">연락처 <span class="req">*</span></span><input type="tel" name="phone" required placeholder="010-0000-0000" autocomplete="tel"></label>
+        </div>
+        <label>작가에게 묻고 싶은 것<textarea name="question" rows="2" placeholder="모임에서 나누고 싶은 질문을 미리 남겨 주세요"></textarea></label>
+      </fieldset>
+
+      <label class="choice agree"><input type="checkbox" name="agree" required> 모임 안내를 위한 개인정보(이름, 연락처) 수집에 동의해요. <span class="req">*</span></label>
+      <p class="form-error" role="alert" hidden></p>
+      <button type="submit" class="btn btn-red">참여 신청하기</button>
+    </form>
+  </dialog>
 
   <!-- Book reservation (modal) -->
   <dialog class="booking-modal" id="reserve" aria-labelledby="reserve-title">

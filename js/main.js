@@ -331,3 +331,42 @@ reserveForm.addEventListener('submit', (e) => {
       <button type="button" class="btn btn-green" onclick="this.closest('dialog').close()">닫기</button>
     </div>`;
 });
+
+// 03 Next week: 미리 읽고 참여하기 opens the book club sign-up in a modal
+const joinModal = document.querySelector('#join');
+const joinForm = joinModal.querySelector('.join-form');
+const joinFormHTML = joinForm.innerHTML;
+
+document.querySelector('a[href="#join"]').addEventListener('click', (e) => {
+  e.preventDefault();
+  joinForm.innerHTML = joinFormHTML; // fresh form each time
+  joinModal.showModal();
+});
+joinModal.querySelector('.modal-close').addEventListener('click', () => joinModal.close());
+joinModal.addEventListener('click', (e) => { if (e.target === joinModal) joinModal.close(); });
+
+joinForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const f = joinForm;
+  const problems = [];
+  if (!(Number(f.people.value) >= 1)) problems.push('인원');
+  if (!f.name.value.trim()) problems.push('이름');
+  if (!/^[0-9-]{9,13}$/.test(f.phone.value.trim())) problems.push('연락처');
+  if (!f.agree.checked) problems.push('개인정보 수집 동의');
+  const err = f.querySelector('.form-error');
+  if (problems.length) {
+    err.textContent = `다음 항목을 확인해 주세요: ${problems.join(', ')}`;
+    err.hidden = false;
+    return;
+  }
+  // no server yet — show the confirmation in place of the form
+  const prep = f.book.value;
+  f.innerHTML = `
+    <div class="donate-done">
+      <h3>참여 신청이 접수되었어요</h3>
+      <p><b>사춘기 아들과 우당탕탕 영국여행기</b> 독서토론 · ${f.people.value}명<br>
+        11월 6일 금요일 오후 7시에 만나요. 모임 전날 <b>${f.phone.value.trim()}</b>로 안내 문자를 보내 드릴게요.</p>
+      <p>${prep}</p>
+      <button type="button" class="btn btn-green" onclick="this.closest('dialog').close()">닫기</button>
+    </div>`;
+});

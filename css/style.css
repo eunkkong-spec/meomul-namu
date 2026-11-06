@@ -1088,6 +1088,7 @@ ul, ol { padding: 0; list-style: none; }
   font-size: 26px;
   line-height: 1;
 }
+.join-when { margin-top: -4px; color: #a65a14; font-size: 14px; }
 .reserve-book { padding: 12px 16px; border-radius: 6px; background: var(--sand); font-family: var(--serif); font-size: 18px; font-weight: 700; }
 .modal-close:hover { background: rgba(74, 51, 38, .16); }
 @media (max-width: 640px) {
